@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "AbilitySystemInterface.h"
 #include "GasTutorialCharacter.generated.h"
 
 class USpringArmComponent;
@@ -27,7 +28,7 @@ enum class EGasAbilityInputId : uint8
  *  Implements a controllable orbiting camera
  */
 UCLASS(abstract)
-class AGasTutorialCharacter : public ACharacter
+class AGasTutorialCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -72,6 +73,7 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 protected:
 
 	/** Called for movement input */
@@ -107,7 +109,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	/** Returns Ability System subobject **/
-	FORCEINLINE class UGWAbilitySystemComponent* GetAbilitySystem() const { return AbilitySystem; }
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "GWAbility")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;

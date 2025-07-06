@@ -107,6 +107,16 @@ void AGasTutorialCharacter::BeginPlay()
 	}
 }
 
+void AGasTutorialCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if(AbilitySystem)
+	{
+		AbilitySystem->ClearAllAbilities();
+	}
+	
+	Super::EndPlay(EndPlayReason);
+}
+
 void AGasTutorialCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -165,4 +175,9 @@ void AGasTutorialCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+UAbilitySystemComponent* AGasTutorialCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
 }
