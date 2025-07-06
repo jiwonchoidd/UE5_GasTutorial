@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "AbilitySystem/GWAbilitySystemComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -47,6 +48,9 @@ AGasTutorialCharacter::AGasTutorialCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	// Create a AbilitySystem
+	AbilitySystem = CreateDefaultSubobject<UGWAbilitySystemComponent>(TEXT("AbilitySystem"));
+	
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -66,10 +70,40 @@ void AGasTutorialCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGasTutorialCharacter::Look);
+
+		if(AbilitySystem)
+		{
+			// 5.1 Enum 네임 -> Enum 경로로 변경됨
+			FGameplayAbilityInputBinds InputBind = FGameplayAbilityInputBinds(
+				TEXT("Confirm"),
+				TEXT("Cancel"),
+				FTopLevelAssetPath(StaticEnum<EGasAbilityInputId>()->GetPathName()),
+				static_cast<int32>(EGasAbilityInputId::Confirm),
+				static_cast<int32>(EGasAbilityInputId::Cancel));
+
+			AbilitySystem->BindAbilityActivationToInputComponent(PlayerInputComponent, InputBind);
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void AGasTutorialCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (AbilitySystem)
+	{
+		for (TSubclassOf<UGameplayAbility>& Ability : DefaultAbilities)
+		{
+			if (!Ability)
+				continue;
+
+			AbilitySystem->GiveAbility(
+				FGameplayAbilitySpec(Ability, 1, static_cast<int32>(EGasAbilityInputId::Confirm), this));
+		}
 	}
 }
 

@@ -14,6 +14,14 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+UENUM()
+enum class EGasAbilityInputId : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Confirm UMETA(DisplayName = "Confirm"),
+	Cancel UMETA(DisplayName = "Cancel"),
+};
+
 /**
  *  A simple player-controllable third person character
  *  Implements a controllable orbiting camera
@@ -30,6 +38,10 @@ class AGasTutorialCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	/** GW Ability System */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UGWAbilitySystemComponent* AbilitySystem;
 	
 protected:
 
@@ -59,6 +71,7 @@ protected:
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void BeginPlay() override;
 protected:
 
 	/** Called for movement input */
@@ -92,5 +105,11 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	/** Returns Ability System subobject **/
+	FORCEINLINE class UGWAbilitySystemComponent* GetAbilitySystem() const { return AbilitySystem; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "GWAbility")
+	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
 };
 
